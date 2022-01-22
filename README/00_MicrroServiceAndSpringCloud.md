@@ -203,19 +203,113 @@ Cloud Native Application을 구축함에 있어서 고려해야 할 12가지 항
 - 각각의 서비스는 최소한의 중앙집중식 관리가 되어야 한다.
 - 서로 다른 프로그래밍 언어와 서로 다른 데이터 저장 기술을 사용할 수 있다.
 - 하나의 서비스를 구성하는 크기가 도메인의 특성을 고려해서 경계를 구분하고 구분된 서비스는 독립적인 언어와 독립적인 db를 사용할 수 있다.
-- 
+- 즉, Microservice는 개발 언어와 DB를 전체 어플리케이션을 통일하는 것이 아닌 각각의 서비스별로 최적화된 언어와 DB를 사용하는 것을 권장한다.
+
+
+<br>
+
+### Monolithic vs Front&Back vs Microservice
+- 하나의 어플리케이션에 모든 로직과 서비스가 포함되는 Monolithic 방식
+- 사용자에게 화면을 보여주고 어떤 액션을 처리받도록 하는 프론트 부분과 서버 사이드 부분을 구분하는 Front & Back 방식
+  - 서로 필요한 부분만 통신하여 각각 최적화된 개발환경을 독립적으로 유지할 수 있다.
+- BackEnd의 각 서비스를 서로 의미있는 경계로 구분하는 것을 더한 MSA 방식
+  - 서비스 요청에 대한 통일된 gateway, 서비스들의 등록,검색, 부하분산, 문제 발생시 대처법, 분리된 서버들의 데이터 동기화 메커니즘이 필요할 것이다.
+
 
 <br>
 
 ## Microservice Architecture 란?
 
+### Microservice의 특징
+1. Challenges : 개발의 패러다임을 바꾸어야 한다. 독립적으로 배포가능한 형태의 작은 서비스로 이루어져 있다.
+2. Small Well Chosen Deployable Units : 독립적으로 배포가능한 형태의 작은 서비스로 이루어져 있다.
+3. Bounded Context : 각 서비스의 경계가 잘 구분되어야 한다.
+4. RESTful : 서로 Rest API로 통신해야 한다. (Http 기반 JSON 포맷 통신)
+5. Configuration Management : 환경, 설정 정보는 외부의 시스템을 통해 관리한다. ( 하드 코딩해야 하는 정보 관리 - IP 주소, 특정 값 등 )
+6. Cloud Enabled : Cloud Native 기술을 이용하여 서비스를 제공한다.
+7. Dynamic Scale Up And Scale Down : 인스턴스는 부하분산처리, Scale-up, Scale-down을 동적으로 처리할 수 있도록 구성해야 한다.
+   - Microservice 하나의 서비스가 다른 서비스를 조작하고 사용함으로써 전체 애플리케이션을 구성할 수 있고, 하나의 서비스에서 하나의 시스템 또는 인스턴스만 직접 서비스되는 것이 아니라 여러개의 분산된 형태로 서비스될 수 있다.  
+8. CI/CD : 서비스가 묶여 하나의 어플리케이션으로 작동하므로 자동화 배포가 중요하다.
+9.  Visibility : Microservice들을 시각화할 수 있는 관리도구를 포함해야 한다.
+
+
+### Microservice Architecture 도입시 고려사항
+Q1 ) Multiple Rates of Change
+- 도입했을 때 어느 정도의 공수를 받아들일 수 있을 것인가
+  
+Q2 ) Independent Life Cycles
+- 각 서비스들이 독립적으로 개발되고 운영될 수 있도록 서비스 경계가 만들어져 있는가
+
+Q3 ) Independent Scalability
+- 서비스들의 유지보수성, 확장성이 잘 고려되었는가
+
+Q4 ) Failure Isolation
+- 각 오류들이 잘 격리되고 독립적인가
+
+Q5 ) Simplify Interactions with External Dependencies
+- 외부 종속성과의 상호 작용을 단순화해 종속성을 줄이고 내부 응집도는 높여야 한다.
+
+Q6 ) Polyglot Technology
+- 각 서비스들에 맞는 여러가지 언어, DB, 운영환경 등을 자유롭게 선택하여 사용할 수 있는가
+
+
 <br>
 
 ## SOA vs MSA
+### Service Oriented Architecture vs Microservice Architecture
+- 서비스를 지향한다는 공통점
+- SOA : 재사용을 통한 비용 절감이 주 목적
+  - 서비스 공유 최대화
+  - 기술 방식 : 공통의 서비스를 ESB(서비스 버스 - WSDL/UDDI/ESB )에 모아 사업  측면에서 공통 서비스 형식으로 서비스 제공
+- MSA : 서비스 간의 결합도를 낮추어 변화에 능동적으로 대응하려는 목적
+  - 서비스 공유의 최소화
+  - API를 통해 데이터를 요청하고 사용해야 한다.
+  - Microservice에 문제가 생기더라도 다른 Microservice에 직접적인 영향을 주지 않고 우회할수 있는 서비스로 구현된 것
+  - 기술 방식 : 각 독립된 서비스가 노출된 REST API를 사용
+
+### REST API
+### 성숙도 모델 : REST API를 개발할 때 확인, 고려할 내용
+- Level 0
+  - 가장 기본적인 단계
+  - 기존의 리소스를 웹서비스 상태로 제공하기 위해 url만 매핑한 형태
+- Level 1
+  - 외부로 공개하고자 하는 리소스를 의미있고 적절한 URI로 표현
+  - 적절한 패턴을 가지고 작성되었지만 http 메소드 별로 서비스를 구분해서 사용하지는 않는다.
+  - 사용자의 요청을 단순히 GET/POST로 처리, 모든 반환값에 대해 에러코드, 200(OK) 코드를 반환하는 경우
+- Level 2
+  -  Level 1 + HTTP Method 의 형태
+  -  제공하고자 하는 리소스를 적절한 용도와 상태에 따라 HTTP Method에 맞게 설계, 서비스하는 단계
+  -  리소스가 읽기 용도의 데이터일 경우 GET, 새로운 리소스 추가 POST, 기존 리소스 변경 PUT, 삭제 DELETE Method를 이용하여 서비스의 상태 표현
+  -  비슷한 이름의 URI이더라도 HTTP Method에 따라 다른 형태의 서비스를 제공할 수 있다.
+- Level 3 
+  - Level 2 + HATEOAS 의 형태
+  - 데이터를 가지고 다음 작업에서 어떠한 Action을 할 수 있는지 상태 정보를 함께 보낸다.
+  - 리소스를 적절한 상태로 표현하고, 다음 작업을 어떻게 하는지에 대한 모든 정보를 알려주는 기능인 HATEOAS가 포함된다.
+  - 클라이언트는 서버가 제공하는 서비스를 하나하나 찾아야 하는 수고를 겪지 않을 수 있다.
+  - EndPoint를 통해 다음 URI를 알 수 있는 상태가 된다.
+
+### RESTFul Web Service 고려사항
+- Consumer first : 소비자는 API를 사용하는 또다른 시스템, 개발자를 위해 간단명료하고 직관적인 API를 설계해야 한다.
+- Make best use of HTTP : HTTP Method, Request, Response, Header 등 HTTP 장점을 살려서 개발해야 한다.
+- Request methods : 적절한 HTTP Method(GET/POST/PUT/DELETE)를 이용하여 Level 2 성숙도 모델 이상으로 지켜야 한다.
+- Response Status : API 요청에 맞게 적절한 상태코드가 전달되어야 한다. 
+- No secure info in URI : URI에는 sercure 정보를 포함하지 않는다.
+- Use plurals : 단수 보다 복수 형태의 값을 사용하여 제공한다.
+- User nouns for resources : 동사보다 명사 형태로 표시하여 사용자에게 직관성 제공한다.
+- For exceptions : 일관적인 end point 사용하는 것이 좋다. 진입점 단일화 (API Gateway) 를 활용하는 것이 포함된다.
 
 <br>
 
 ## Microservice Architecture Structures
+### MSA Compnoents 구성 예
+
+<img src="./img/MSAComponent.png">
+
+- Microservice는 독립적으로 배포, 확장될 수 있는 서비스를 조합해서 하나의 애플리케이션을 구성하는 아키텍쳐 패턴이다.
+- Microservice를 지원하고 관리하기 위해 Service Discovery, API Gateway, Ocastration, Context Boudery 등의 서비스를 연계해서 사용한다.
+- CNCF에서는 각 시스템과 시스템을 구성하는 서비스 별로 CNCF의 솔루션, 기술을 소개하고 있다. 
+
+
 
 <br>
 
